@@ -290,8 +290,8 @@ function LoadoutChat({ pieces, plan, onNewPlan }) {
     try {
       const history = messages.map(m => ({ role: m.role==='user'?'user':'assistant', content: m.text }));
       const sysCtx = `You are a rigging foreman assistant. Current load plan: ${JSON.stringify(plan)}. Pieces: ${JSON.stringify(pieces.map(p=>({mark:p.mark,length:+p.length,width:+p.width,depth:+p.depth,hasTop:p.hasTop,hasBottom:p.hasBottom,hasEnds:p.hasEnds})))}. Trailer: 48ft flatbed, 8.5ft wide.`;
-      const r = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST', headers:{'Content-Type':'application/json','x-api-key':import.meta.env.VITE_ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      const r = await fetch('/api/claude', {
+        method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
           model: MODEL, max_tokens: 2000, system: sysCtx,
           messages: [...history, { role:'user', content: userMsg + '\n\nIf suggesting a new arrangement, include JSON:\n```json\n{"stacks":[...],"notes":[...]}\n```' }]
@@ -518,7 +518,7 @@ export default function App() {
   };
 
   const callAPI = async (messages, maxTok=1200) => {
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:maxTok,messages})});
+    const r=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:maxTok,messages})});
     const d=await r.json();
     if(!r.ok)throw new Error(`API ${r.status}: ${d.error?.message||JSON.stringify(d).slice(0,200)}`);
     if(!d.content?.length)throw new Error('Empty API response');
